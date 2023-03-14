@@ -31,7 +31,9 @@ class Vindriktning:
   last_frame -> string:
     return frame.size == 0?
       "-- none --":
+      // From CoPilot.
       "$frame[0] $frame[1] $frame[2] $frame[3] $frame[4] $(frame[5]) $frame[6] $(frame[7]) $(frame[8]) $(frame[9]) $(frame[10]) $(frame[11]) $(frame[12]) $(frame[13]) $(frame[14]) $(frame[15]) $(frame[16]) $(frame[17]) $(frame[18]) $(frame[19])"
+      // (List 20: "$(%02x frame[it])").join " "  // Elegant alternative from kasperl.
 
   next -> ByteArray?:
     frame = port.read
