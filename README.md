@@ -45,11 +45,8 @@ Reporting over MQTT, I disconnected the USB serial monitor to the ezSBC board an
 To provide some local indication of status, the RED led is flashed:
 - 50mS, after each valid frame received serially from the sensor
 - 950mS, after each MQTT payload is transmitted over WiFi
-  
-<video width="480" height="852" controls>
-  <source src="led_status.mp4" type="video/mp4">
-Your browser does not support the video tag.
-</video>
+
+(You have to watch the `led_status.mp4` video to the very end to see the transmit indication)
 
 ### References:
 1. [Datasheet](http://www.jdscompany.co.kr/download.asp?gubun=07&filename=PM1006_LED_PARTICLE_SENSOR_MODULE_SPECIFICATIONS.pdf)
