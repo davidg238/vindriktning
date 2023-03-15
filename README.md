@@ -40,7 +40,7 @@ To check you are getting data to Adafruit, click the defined feed and you should
 
 ![line chart](line_chart.png)
 
-Reporting over MQTT, I disconnected the USB serial monitor to the ezSBC board and powered the board from the VINDRIKTNING, leaving the LiPo connected to help with the power surges during WiFi transmit.
+Reporting over MQTT, I disconnected the USB serial monitor to the ezSBC board and powered the board from the VINDRIKTNING. (The LiPo shown in the video is not necessary).
 
 To provide some local indication of status, the RED led is flashed:
 - 50mS, after each valid frame received serially from the sensor
