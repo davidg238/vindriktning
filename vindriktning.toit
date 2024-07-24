@@ -1,26 +1,29 @@
 // Copyright 2023 Ekorau LLC
 
+import io show Reader
 import serial
 import gpio
-import serial.ports.uart show Port
+import uart show Port
 
 class Vindriktning:
 
   frame := #[]
-  air_quality_ := -1
+  air-quality_ := -1
   
   rx_/gpio.Pin
   port/Port
+  reader/Reader
 
   constructor rx/int:
     rx_ = gpio.Pin rx
     port = Port
             --tx = gpio.Pin 17 // Not used.
             --rx = rx_
-            --baud_rate = 9600
+            --baud-rate = 9600
+    reader = port.in
 
-  air_quality -> int:    
-    return air_quality_
+  air-quality -> int:    
+    return air-quality_
 
   checksum bytes/ByteArray -> int:
     sum := 0
@@ -28,7 +31,7 @@ class Vindriktning:
       sum += bytes[i]
     return sum & 0x00FF
 
-  last_frame -> string:
+  last-frame -> string:
     return frame.size == 0?
       "-- none --":
       // From CoPilot.
@@ -36,8 +39,8 @@ class Vindriktning:
       // (List 20: "$(%02x frame[it])").join " "  // Elegant alternative from kasperl.
 
   next -> ByteArray?:
-    frame = port.read
+    frame = reader.read
     while frame.size != 20 or frame[0] != 0x16 or frame[1] != 0x11 or frame[2] != 0x0b or (checksum frame) != 0:
-      frame = port.read
-    air_quality_ = frame[5] << 8 | frame[6]
+      frame = reader.read
+    air-quality_ = frame[5] << 8 | frame[6]
     return frame

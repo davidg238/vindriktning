@@ -4,29 +4,47 @@ import mqtt
 import net
 import monitor show Mutex
 import .vindriktning
-import .credentials show ADAFRUIT_IO_USERNAME  ADAFRUIT_IO_KEY ADAFRUIT_IO_FEEDNAME CLIENT_ID
+import .credentials show ADAFRUIT-IO-USERNAME  ADAFRUIT-IO-KEY ADAFRUIT-IO-FEEDNAME CLIENT-ID
 
 data := Deque
 mutex := Mutex
 
-RED_LED ::= 13
-rled := gpio.Pin RED_LED --output
+RED-LED ::= 13
+rled := gpio.Pin RED-LED --output
 
 main:
-  task:: data_collect
-  task:: data_send
+  task:: data-collect
+  task:: data-print
+  task:: data-send
   
-data_collect:  
+data-collect:  
   vin := Vindriktning 21
   while vin.next:
     mutex.do:
-      dot_red
-      if data.size >4: data.remove_first
-      data.add vin.air_quality
+      dot-red
+      if data.size >4: data.remove-first
+      data.add vin.air-quality
 
-data_send:
+data-print:
+  sum := 0
+  msg := ""
+  val := 0
+
+  while true:
+    an-exception := catch:
+      (Duration --m=1).periodic:
+        mutex.do:
+          sum = data.reduce --initial=0 : | a b | 
+                  a + b
+          val = data.size > 0? (sum / data.size): 0 // For .periodic at t=0.
+        msg = "$val"
+        print "$Time.now ppm: $val"
+    if an-exception:
+      print "At $Time.now got $an-exception"
+
+data-send:
   HOST ::= "io.adafruit.com"
-  TOPIC ::= "$ADAFRUIT_IO_USERNAME/feeds/$ADAFRUIT_IO_FEEDNAME"
+  TOPIC ::= "$ADAFRUIT-IO-USERNAME/feeds/$ADAFRUIT-IO-FEEDNAME"
   sum := 0
   val := -1
   msg := ""
@@ -35,35 +53,45 @@ data_send:
   transport := mqtt.TcpTransport network --host=HOST
   client := mqtt.Client --transport=transport
   options := mqtt.SessionOptions
-    --client_id = CLIENT_ID
-    --username = ADAFRUIT_IO_USERNAME
-    --password = ADAFRUIT_IO_KEY
+    --client-id = CLIENT-ID
+    --username = ADAFRUIT-IO-USERNAME
+    --password = ADAFRUIT-IO-KEY
   client.start --options=options
 
-  (Duration --m=1).periodic:
-    mutex.do:
-      sum = data.reduce --initial=0: | a b | 
-              a + b
-      val = data.size > 0? (sum / data.size): 0 // For .periodic at t=0.
-    msg = "$val"
-    print "ppm: $val"
-    client.publish TOPIC msg.to_byte_array
-    dash_red
+  mq-exception := catch:
+    (Duration --m=1).periodic:
+      mutex.do:
+        sum = data.reduce --initial=0: | a b | 
+                a + b
+        val = data.size > 0? (sum / data.size): 0 // For .periodic at t=0.
+      msg = "$val"
+      print "ppm: $val"
+      client.publish TOPIC msg.to-byte-array
+      dash-red
+  if mq-exception:
+    fail 250 750
 
-red_on -> none:
+red-on -> none:
   rled.set 0
 
-red_off -> none:
+red-off -> none:
   rled.set 1
 
-dash_red --on=950 --off=50 -> none:
-  red_on
+fail on off:
+  while true:
+    red-on
+    sleep --ms=on
+    red-off
+    sleep --ms=off
+
+dash-red --on=950 --off=50 -> none:
+  red-on
   sleep --ms=on
-  red_off
+  red-off
   sleep --ms=off  
 
-dot_red --on=50 --off=950 -> none:
-  red_on
+dot-red --on=50 --off=950 -> none:
+  red-on
   sleep --ms=on
-  red_off
+  red-off
   sleep --ms=off  
