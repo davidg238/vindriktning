@@ -6,14 +6,14 @@
 // firmware's agent pushes at its next check-in (ztoit#52, step 2).
 
 import net
-import zephyr
+import ztoit
 import .vin_frames
 
 // How often the network is opened, so the agent checks in and pushes the last reading.
 REPORT-MS ::= 60_000
 
 main:
-  uart := zephyr.Uart "uart2" --baud=9600
+  uart := ztoit.Uart "uart2" --baud=9600
   task:: report
   parser := FrameParser
   print "vin: listening on uart2"
@@ -21,7 +21,7 @@ main:
     parser.add uart.read
     while pm25 := parser.next:
       print "vin: pm25 $pm25"
-      zephyr.observe "vin/pm25" pm25
+      ztoit.observe "vin/pm25" pm25
 
 // Opens the network and closes it again: the agent checks in while the link is
 // up, and the close waits for that check-in. A task of its own, so the UART is
